@@ -42,7 +42,7 @@ if __name__ == '__main__':
     parser.add_argument('--env', type=str, default='Coinrun-standard')
     parser.add_argument('--env_monotheme', action='store_true', default=False, help='use single env theme')
     parser.add_argument('--exp_name', type=str, default='dev_baseline')
-    parser.add_argument('--output_dir', type=str, default='/workdisk/nosnap/procgen/', help='number of training levels')
+    parser.add_argument('--output_dir', type=str, default='results/', help='number of training levels')
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--difficulty', type=int, default=0)
 

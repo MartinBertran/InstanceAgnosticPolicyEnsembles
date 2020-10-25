@@ -35,19 +35,19 @@ def compute_param_norm(parameters):
     return total_norm
 
 
-def deviant(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
-            steps_per_epoch=3200, n_rollout=100, n_bootstrap=100, epochs=50, gamma=0.99,
-            lr_v=1e-3, train_iters=1, logger_kwargs=dict(), save_freq=20, clip_rho_threshold=1.0, pg_mode='one_step', mode='deviant',
-            clip_pg_rho_threshold=1.0, clip_beta_threshold=2.0,
-            ent_coef=0.01, n_minibatch=8, multi_buff=1, n_ensemble=1,
-            param_path='',
-            device=None, verbose=True, reload=False, weight_decay=0,
-            average_ens=False,
-            individual_training=True,
-            baseline_ensemble=False,
-            zero_hidden=False,
+def iape(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
+         steps_per_epoch=3200, n_rollout=100, n_bootstrap=100, epochs=50, gamma=0.99,
+         lr_v=1e-3, train_iters=1, logger_kwargs=dict(), save_freq=20, clip_rho_threshold=1.0, pg_mode='one_step', mode='deviant',
+         clip_pg_rho_threshold=1.0, clip_beta_threshold=2.0,
+         ent_coef=0.01, n_minibatch=8, multi_buff=1, n_ensemble=1,
+         param_path='',
+         device=None, verbose=True, reload=False, weight_decay=0,
+         average_ens=False,
+         individual_training=True,
+         baseline_ensemble=False,
+         zero_hidden=False,
 
-            ):
+         ):
     """
 
     """
@@ -366,8 +366,8 @@ if __name__ == '__main__':
     # resource usage
     # parser.add_argument('--cpu', type=int, default=1, help='number of cpu cores for traininig')
     parser.add_argument('--gpu', type=int, default=0)
-    parser.add_argument('--exp_name', type=str, default='aws_debug')
-    parser.add_argument('--output_dir', type=str, default='/workdisk/nosnap/procgen/', help='dir to store results')
+    parser.add_argument('--exp_name', type=str, default='base')
+    parser.add_argument('--output_dir', type=str, default='results/', help='dir to store results')
 
     #Network configurations
     parser.add_argument('--n_hid', type=int, default=256, help='rnn hidden dim') #256
@@ -399,7 +399,6 @@ if __name__ == '__main__':
 
     #Environment options
     parser.add_argument('--env', type=str, default='procgen:procgen-coinrun-v0') #CartPole-v1, Coinrun-standard; special
-    # parser.add_argument('--env_aug', action='store_true', default=False, help='use data augmentation (cutout)')
     parser.add_argument('--env_aug', action='store', type=int, default=0, help='use data augmentation (cutout)')
     parser.add_argument('--env_monotheme', action='store_true', default=False, help='use single env theme')
     parser.add_argument('--env_force_paint_velocity', type=int, default=0, help='force paint_velocity_info flag')
@@ -407,13 +406,13 @@ if __name__ == '__main__':
     parser.add_argument('--env_maze', action='store_true', default=False, help='use maze env')
     parser.add_argument('--n_env_levels', type=int, default=500, help='number of training levels')
     parser.add_argument('--env_seed', type=int, default=0, help='seed offset for environment')
-    parser.add_argument('--n_env', type=int, default=256, help='simultaneous environment number') #256
+    parser.add_argument('--n_env', type=int, default=256, help='simultaneous number of environments') #256
     parser.add_argument('--seed', '-s', type=int, default=0)
 
-    #Confusing ensemble options,all of them OFF for IAPE
-    parser.add_argument('--joint', action='store_true', default=False, help='Train all ensembles on all experience traces')
-    parser.add_argument('--baseline_ensemble', action='store_true', default=False, help='Collect episodes from random ensemble data')
-    parser.add_argument('--average_ens', action='store', type=int, default=0, help='use ensemble average as rollout')
+    #ensemble options, default values for IAPE are already provided
+    parser.add_argument('--individual_training', action='store_true', default=False, help='Train all ensembles on all experience traces')
+    parser.add_argument('--baseline_ensemble', action='store_true', default=False, help='Collect episodes from random ensemble head')
+    parser.add_argument('--average_ens', action='store', type=int, default=1, help='use ensemble average as rollout')
 
     args = parser.parse_args()
 
@@ -449,18 +448,18 @@ if __name__ == '__main__':
         env_fn =lambda: make_atari_env(num_env=args.n_env, env_name=args.env)
 
 
-    deviant(env_fn,
-            actor_critic=actor_critic,
-            ac_kwargs=ac_kwargs, gamma=args.gamma,
-            seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs, save_freq=args.save_freq,
-            train_iters=args.train_iters,
-            n_minibatch=args.n_minibatch, n_rollout=args.n_rollout, n_bootstrap=args.n_bootstrap,
-            ent_coef=args.ent_coef, lr_v=args.lr_v, device=device, pg_mode=args.pg_mode,
-            mode=args.mode,n_ensemble = args.n_ens, multi_buff=args.multi_buff,
-            param_path=args.model_param_path, reload = bool(args.reload),
-            logger_kwargs=logger_kwargs, weight_decay=args.wd,
-            average_ens = bool(args.average_ens), #detached_ens = args.detached_ens,
-            individual_training=not args.joint,
-            baseline_ensemble=args.baseline_ensemble,
-            zero_hidden= bool(args.zero_hidden)
-            )
+    iape(env_fn,
+         actor_critic=actor_critic,
+         ac_kwargs=ac_kwargs, gamma=args.gamma,
+         seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs, save_freq=args.save_freq,
+         train_iters=args.train_iters,
+         n_minibatch=args.n_minibatch, n_rollout=args.n_rollout, n_bootstrap=args.n_bootstrap,
+         ent_coef=args.ent_coef, lr_v=args.lr_v, device=device, pg_mode=args.pg_mode,
+         mode=args.mode, n_ensemble = args.n_ens, multi_buff=args.multi_buff,
+         param_path=args.model_param_path, reload = bool(args.reload),
+         logger_kwargs=logger_kwargs, weight_decay=args.wd,
+         average_ens = bool(args.average_ens),  #detached_ens = args.detached_ens,
+         individual_training=not args.joint,
+         baseline_ensemble=args.baseline_ensemble,
+         zero_hidden= bool(args.zero_hidden)
+         )
